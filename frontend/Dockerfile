@@ -6,7 +6,7 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # Stage 2: Run Development
 FROM node:20-alpine AS runner

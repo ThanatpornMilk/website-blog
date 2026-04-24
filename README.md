@@ -27,9 +27,9 @@ git clone <repository-url>
 cd website-blog
 
 # 2. รันทุก Service (Database + Backend + Frontend)
-docker compose up --build
+docker compose up -d
 
-# 3. (ครั้งแรกเท่านั้น) เปิด Terminal ใหม่แล้วรัน
+# 3. (ครั้งแรกเท่านั้น) Setup ฐานข้อมูล
 docker compose exec backend npx prisma migrate deploy
 docker compose exec backend pnpm prisma db seed
 ```
