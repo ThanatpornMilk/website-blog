@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgres:16
+    container_name: website_blog_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: MyPostgres_21
+      POSTGRES_DB: website_blog
+    ports:
+      - "5432:5432"
+    volumes:
+      - website_blog_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: website_blog_backend
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      DATABASE_URL: postgresql://postgres:MyPostgres_21@db:5432/website_blog
+      CORS_ORIGIN: http://localhost:3000
+      SESSION_SECRET: change-me-in-production
+      ADMIN_SEED_USERNAME: admin
+      ADMIN_SEED_PASSWORD: admin1234
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: website_blog_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080/api
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  website_blog_pg:
