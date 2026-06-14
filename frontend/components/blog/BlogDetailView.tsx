@@ -7,8 +7,10 @@ import BlogHeader from "./BlogHeader";
 import BlogGallery from "./BlogGallery";
 import CommentSection from "@/components/blog/CommentSection";
 
+import { Blog } from "@/lib/types";
+
 interface BlogDetailViewProps {
-  blog: any;
+  blog: Blog;
   slug: string;
 }
 
@@ -25,10 +27,10 @@ export default function BlogDetailView({ blog, slug }: Readonly<BlogDetailViewPr
         </div>
 
         {/* แกลเลอรี่รูปภาพ (Client Component - แยกเฉพาะจุดที่ต้อง Interactive) */}
-        <BlogGallery images={blog.images} blogTitle={blog.title} />
+        <BlogGallery images={blog.images || []} blogTitle={blog.title} />
 
         {/* ส่วนคอมเมนต์ */}
-        <CommentSection slug={slug} comments={blog.comments} />
+        <CommentSection slug={slug} comments={blog.comments || []} />
       </div>
     </article>
   );

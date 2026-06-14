@@ -15,9 +15,10 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { Blog } from "@/lib/types";
 
 interface HomeViewProps {
-  blogs: any[];
+  blogs: Blog[];
   search: string;
   pagination: {
     total: number;
@@ -54,7 +55,7 @@ export default function HomeView({ blogs, search, pagination, currentPage }: Hom
 
         {blogs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-stone-600">
-            {blogs.map((blog: any) => <BlogCard key={blog.id} blog={blog} />)}
+            {blogs.map((blog: Blog) => <BlogCard key={blog.id} blog={blog} />)}
           </div>
         ) : (
           <div className="py-20 text-center bg-white rounded-[2rem] border border-dashed border-stone-200 text-stone-400 font-medium">ไม่พบบทความที่คุณกำลังมองหา...</div>

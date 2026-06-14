@@ -3,6 +3,8 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import session from "express-session";
+import { PrismaSessionStore } from "@quixo3/prisma-session-store";
+import { prisma } from "./db";
 
 import blogsRouter from "./routes/blogs";
 import commentsRouter from "./routes/comments";
@@ -25,7 +27,7 @@ app.use(cors({
 app.use(express.json()); // รองรับการรับข้อมูลแบบ JSON
 app.use(cookieParser()); // รองรับการอ่านข้อมูลจาก Cookie
 
-// ตั้งค่า Session: เก็บข้อมูลการล็อคอินไว้ใน Server (ชั่วคราว)
+// ตั้งค่า Session: เก็บข้อมูลการล็อกอินไว้ใน Database
 app.use(session({
     secret: process.env.SESSION_SECRET || "my-secret-key",
     resave: false,
@@ -34,6 +36,14 @@ app.use(session({
         httpOnly: true,
         maxAge: 1000 * 60 * 60 * 24, // อายุ 1 วัน
     },
+    store: new PrismaSessionStore(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        prisma as any,
+        {
+            checkPeriod: 2 * 60 * 1000, // ล้าง Session หมดอายุทุก 2 นาที
+            dbRecordIdIsSessionId: true,
+        }
+    ),
 }));
 
 /**

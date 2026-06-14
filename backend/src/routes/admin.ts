@@ -2,6 +2,8 @@ import { Router, Request, Response } from "express";
 import { prisma } from "../db";
 import { asyncHandler } from "../utils/asyncHandler";
 import { z } from "zod";
+import bcrypt from "bcryptjs";
+import { requireAdmin } from "../middleware/auth";
 
 const router = Router();
 
@@ -9,31 +11,30 @@ const router = Router();
  * ─── AUTHENTICATION ROUTES (No Admin Required) ───────────────────────────
  */
 
-// POST /api/admin/login: ตรวจสอบรหัสผ่านจาก .env และสร้าง Session
+// POST /api/admin/login: ตรวจสอบรหัสผ่านจาก Database และสร้าง Session
 router.post("/login", asyncHandler(async (req: Request, res: Response) => {
     const { username, password } = req.body;
 
-    // ตรวจสอบกับค่าที่ตั้งไว้ในไฟล์ .env
-    if (username === process.env.ADMIN_SEED_USERNAME && password === process.env.ADMIN_SEED_PASSWORD) {
-        req.session.admin = true; // บันทึกสถานะแอดมินลงใน Session
-        res.json({ message: "Login successful" });
-    } else {
-        res.status(401).json({ error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
+    // 1. ค้นหาผู้ดูแลระบบจากฐานข้อมูล
+    const admin = await prisma.admin.findUnique({
+        where: { username },
+    });
+
+    // 2. หากไม่พบ หรือ รหัสผ่านไม่ถูกต้อง (เปรียบเทียบโดยการถอดรหัส bcrypt)
+    if (!admin || !(await bcrypt.compare(password, admin.passwordHash))) {
+        return res.status(401).json({ error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
     }
+
+    // 3. หากถูกต้อง ให้บันทึกสถานะลงใน Session
+    req.session.admin = true;
+    req.session.adminId = admin.id;
+    res.json({ message: "Login successful" });
 }));
 
 /**
  * ─── MIDDLEWARE: ADMIN GUARD ──────────────────────────────────────────────
  * ถ้าไม่มี Session แอดมิน จะเตะออก
  */
-const requireAdmin = (req: Request, res: Response, next: any) => {
-    if (req.session.admin) {
-        next();
-    } else {
-        res.status(401).json({ error: "Unauthorized" });
-    }
-};
-
 // ใช้ตรวจกับทุก Route ที่อยู่หลังจากนี้
 router.use(requireAdmin);
 
@@ -96,7 +97,10 @@ const updateBlogSchema = z.object({
 router.patch("/blogs/:id", asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     const result = updateBlogSchema.safeParse(req.body);
-    if (!result.success) return res.status(400).json({ error: result.error.flatten() });
+    if (!result.success) {
+        const errorMsg = Object.values(result.error.flatten().fieldErrors).flat().join(", ");
+        return res.status(400).json({ error: errorMsg });
+    }
 
     const { images, ...data } = result.data;
 

@@ -5,6 +5,7 @@
 
 import HomeView from "@/components/home/HomeView";
 import { apiFetch } from "@/lib/api";
+import { Blog } from "@/lib/types";
 
 export default async function HomePage({
   searchParams,
@@ -14,7 +15,7 @@ export default async function HomePage({
   const { search = "", page } = await searchParams;
   const currentPage = Number.parseInt(page || "1") || 1;
 
-  let blogs = [];
+  let blogs: Blog[] = [];
   let pagination = { total: 0, totalPages: 0 };
 
   try {

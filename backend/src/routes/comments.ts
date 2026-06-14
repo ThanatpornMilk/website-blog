@@ -5,20 +5,20 @@ import { z } from "zod";
 
 const router = Router({ mergeParams: true });
 
-// Validate ภาษาไทยและตัวเลข
-const ThaiNumRegex = /^[ก-๙\s0-9]*$/;
+// Validate ภาษาไทย ภาษาอังกฤษ ตัวเลข และสัญลักษณ์ทั่วไป
+const ThaiNumRegex = /^[ก-๙a-zA-Z0-9\s.,!?_@()\-+=]*$/;
 
 const CommentSchema = z.object({
     author: z
         .string()
         .min(1, "กรุณากรอกชื่อ")
         .max(100)
-        .regex(ThaiNumRegex, "ชื่อต้องเป็นภาษาไทยหรือตัวเลขเท่านั้น"),
+        .regex(ThaiNumRegex, "ชื่อต้องเป็นภาษาไทย ภาษาอังกฤษ ตัวเลข หรือสัญลักษณ์ทั่วไปเท่านั้น"),
     message: z
         .string()
         .min(1, "กรุณากรอกข้อความ")
         .max(1000)
-        .regex(ThaiNumRegex, "ข้อความต้องเป็นภาษาไทยหรือตัวเลขเท่านั้น"),
+        .regex(ThaiNumRegex, "ข้อความต้องเป็นภาษาไทย ภาษาอังกฤษ ตัวเลข หรือสัญลักษณ์ทั่วไปเท่านั้น"),
 });
 
 // POST /api/blogs/:slug/comments — ส่ง Comment
@@ -28,8 +28,9 @@ router.post("/", asyncHandler(async (req: Request, res: Response) => {
     // 1. เช็คว่าชื่อและข้อความเป็นไปตามกฎ (ไทย+ตัวเลข) 
     const result = CommentSchema.safeParse(req.body);
     if (!result.success) {
-        // ถ้าไม่ผ่าน ให้ส่ง Error กลับไปแจ้งเตือนที่หน้าเว็บ
-        return res.status(400).json({ error: result.error.flatten().fieldErrors });
+        // ดึงเฉพาะข้อความ error มาต่อกันเป็น string เดียวแล้วส่งกลับ
+        const errorMsg = Object.values(result.error.flatten().fieldErrors).flat().join(", ");
+        return res.status(400).json({ error: errorMsg });
     }
 
     // 2. ตรวจสอบให้แน่ใจว่า slug เป็น string

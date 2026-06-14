@@ -11,6 +11,7 @@ import AdminHeader from "./AdminHeader";
 import { Save, ImageIcon, Info, Eye, PenLine } from "lucide-react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
+import { BlogImage } from "@/lib/types";
 
 interface BlogEditViewProps {
   blogId: string;
@@ -22,10 +23,10 @@ export default function BlogEditView({ blogId, onBack, onSave }: Readonly<BlogEd
   // สถานะโหลดข้อมูล และสถานะการบันทึก
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  
+
   // สถานะแท็บปัจจุบัน (เขียน หรือ ดูตัวอย่าง)
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
-  
+
   // ข้อมูลในฟอร์ม (หัวข้อ, Slug, คำโปรย, เนื้อหาแบบ Markdown)
   const [formData, setFormData] = useState({
     title: "",
@@ -33,11 +34,11 @@ export default function BlogEditView({ blogId, onBack, onSave }: Readonly<BlogEd
     excerpt: "",
     content: "",
   });
-  
-  // รายการรูปภาพของบทความนี้
-  const [images, setImages] = useState<any[]>([]);
 
-  // 📥 ดึงข้อมูลบทความจาก Server เมื่อเปิดหน้าแก้ไข
+  // รายการรูปภาพของบทความนี้
+  const [images, setImages] = useState<BlogImage[]>([]);
+
+  // ดึงข้อมูลบทความจาก Server เมื่อเปิดหน้าแก้ไข
   useEffect(() => {
     const loadBlog = async () => {
       try {
@@ -58,7 +59,7 @@ export default function BlogEditView({ blogId, onBack, onSave }: Readonly<BlogEd
     loadBlog();
   }, [blogId]);
 
-  // 💾 ฟังก์ชันส่งข้อมูลที่แก้ไขแล้วกลับไปบันทึกที่ Server
+  // ฟังก์ชันส่งข้อมูลที่แก้ไขแล้วกลับไปบันทึกที่ Server
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -97,8 +98,8 @@ export default function BlogEditView({ blogId, onBack, onSave }: Readonly<BlogEd
             <Button variant="ghost" onClick={onBack} className="rounded-2xl font-bold text-stone-400">
               ยกเลิก
             </Button>
-            <Button 
-              onClick={handleSave} 
+            <Button
+              onClick={handleSave}
               disabled={saving}
               className="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-6 font-bold gap-2 shadow-lg shadow-orange-500/20"
             >
@@ -116,7 +117,7 @@ export default function BlogEditView({ blogId, onBack, onSave }: Readonly<BlogEd
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="title" className="text-stone-800 font-bold text-sm ml-1">ชื่อบทความ *</Label>
-                <Input 
+                <Input
                   id="title"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -127,7 +128,7 @@ export default function BlogEditView({ blogId, onBack, onSave }: Readonly<BlogEd
 
               <div className="space-y-2">
                 <Label htmlFor="slug" className="text-stone-800 font-bold text-sm ml-1">URL Slug *</Label>
-                <Input 
+                <Input
                   id="slug"
                   value={formData.slug}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
@@ -139,7 +140,7 @@ export default function BlogEditView({ blogId, onBack, onSave }: Readonly<BlogEd
 
             <div className="space-y-2">
               <Label htmlFor="excerpt" className="text-stone-800 font-bold text-sm ml-1">เนื้อหาย่อ</Label>
-              <Textarea 
+              <Textarea
                 id="excerpt"
                 value={formData.excerpt}
                 onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
@@ -151,7 +152,7 @@ export default function BlogEditView({ blogId, onBack, onSave }: Readonly<BlogEd
             <div className="space-y-2 flex-1 flex flex-col relative">
               <div className="flex items-center justify-between mb-2 px-1">
                 <Label htmlFor="content" className="text-stone-800 font-bold text-sm">เนื้อหาเต็ม</Label>
-                
+
                 <Tabs value={activeTab} onValueChange={handleTabChange}>
                   <TabsList>
                     <TabsTrigger value="write" activeValue={activeTab} onClick={handleTabChange}>
@@ -165,7 +166,7 @@ export default function BlogEditView({ blogId, onBack, onSave }: Readonly<BlogEd
               </div>
 
               {activeTab === "write" ? (
-                <Textarea 
+                <Textarea
                   id="content"
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
@@ -174,9 +175,9 @@ export default function BlogEditView({ blogId, onBack, onSave }: Readonly<BlogEd
                 />
               ) : (
                 <div className="flex-1 min-h-[400px] bg-stone-50/50 rounded-[2rem] border border-stone-200 p-8 overflow-y-auto max-h-[600px]">
-                   <div className="prose prose-stone max-w-none prose-headings:text-stone-800 prose-headings:font-black prose-p:text-stone-600 prose-img:rounded-2xl">
-                      <ReactMarkdown>{formData.content || "*ยังไม่มีเนื้อหา*"}</ReactMarkdown>
-                   </div>
+                  <div className="prose prose-stone max-w-none prose-headings:text-stone-800 prose-headings:font-black prose-p:text-stone-600 prose-img:rounded-2xl">
+                    <ReactMarkdown>{formData.content || "*ยังไม่มีเนื้อหา*"}</ReactMarkdown>
+                  </div>
                 </div>
               )}
             </div>
@@ -189,7 +190,7 @@ export default function BlogEditView({ blogId, onBack, onSave }: Readonly<BlogEd
             <Label className="text-stone-800 font-bold text-sm ml-1 flex items-center gap-2">
               <ImageIcon size={16} className="text-orange-500" /> รูปปก
             </Label>
-            
+
             <div className="relative aspect-[16/10] bg-stone-50 rounded-2xl overflow-hidden border border-stone-100 shadow-inner">
               {coverImage ? (
                 <Image src={coverImage.url} alt="Cover" fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover" />
@@ -200,12 +201,12 @@ export default function BlogEditView({ blogId, onBack, onSave }: Readonly<BlogEd
                 </div>
               )}
             </div>
-            
+
             <div className="bg-stone-50 p-3 rounded-xl flex items-start gap-2 border border-stone-100">
-               <Info size={14} className="text-stone-400 mt-0.5 shrink-0" />
-               <p className="text-[10px] text-stone-400 leading-tight">
-                 ระบบจัดการรูปภาพกำลังอยู่ระหว่างการพัฒนา ปัจจุบันเน้นการจัดการเนื้อหาตัวอักษร
-               </p>
+              <Info size={14} className="text-stone-400 mt-0.5 shrink-0" />
+              <p className="text-[10px] text-stone-400 leading-tight">
+                ระบบจัดการรูปภาพกำลังอยู่ระหว่างการพัฒนา ปัจจุบันเน้นการจัดการเนื้อหาตัวอักษร
+              </p>
             </div>
           </Card>
 

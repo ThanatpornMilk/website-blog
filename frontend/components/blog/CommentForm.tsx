@@ -8,6 +8,13 @@ import React, { useState } from "react";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { Input, Textarea, Button, Label } from "@/components/ui";
+// Validation regex matching backend (Thai and numbers only)
+const VALID_CHARS_REGEX = /^[ก-๙\s0-9]*$/;
+
+type FieldErrors = {
+  author?: string;
+  message?: string;
+};
 
 export default function CommentForm({ slug }: Readonly<{ slug: string }>) {
   const [author, setAuthor] = useState("");
@@ -15,25 +22,54 @@ export default function CommentForm({ slug }: Readonly<{ slug: string }>) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // Client‑side validation using same regex as backend
+    const errors: FieldErrors = {};
+    if (!author.trim()) {
+      errors.author = "กรุณากรอกชื่อ";
+    } else if (author.length > 100) {
+      errors.author = "ชื่อต้องไม่เกิน 100 ตัวอักษร";
+    } else if (!VALID_CHARS_REGEX.test(author)) {
+      errors.author = "ชื่อต้องเป็นภาษาไทยหรือตัวเลขเท่านั้น";
+    }
+    if (!message.trim()) {
+      errors.message = "กรุณากรอกข้อความ";
+    } else if (message.length > 1000) {
+      errors.message = "ข้อความต้องไม่เกิน 1,000 ตัวอักษร";
+    } else if (!VALID_CHARS_REGEX.test(message)) {
+      errors.message = "ข้อความต้องเป็นภาษาไทยหรือตัวเลขเท่านั้น";
+    }
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+    setFieldErrors({});
     setIsSubmitting(true);
     setStatus("idle");
     setErrorMsg("");
+    setSuccessMsg("");
 
     try {
-      await apiFetch(`/blogs/${slug}/comments`, {
+      const res = await apiFetch(`/blogs/${slug}/comments`, {
         method: "POST",
         body: JSON.stringify({ author, message }),
       });
 
       setStatus("success");
+      setSuccessMsg(res.message);
       setAuthor("");
       setMessage("");
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus("error");
-      setErrorMsg(err.message || "เกิดข้อผิดพลาดในการส่งความเห็น");
+      if (err instanceof Error) {
+        setErrorMsg(err.message);
+      } else {
+        setErrorMsg("เกิดข้อผิดพลาดในการส่งความเห็น");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -48,7 +84,7 @@ export default function CommentForm({ slug }: Readonly<{ slug: string }>) {
       {status === "success" && (
         <div className="mb-8 p-4 bg-green-50 text-green-700 rounded-2xl border border-green-100 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
           <CheckCircle2 size={20} />
-          <p className="text-sm font-medium">ส่งความคิดเห็นเรียบร้อยแล้ว! กรุณารอแอดมินตรวจสอบครับ</p>
+          <p className="text-sm font-medium">{successMsg}</p>
         </div>
       )}
 
@@ -68,11 +104,20 @@ export default function CommentForm({ slug }: Readonly<{ slug: string }>) {
             id="author"
             required
             value={author}
-            onChange={(e) => setAuthor(e.target.value)}
+            onChange={(e) => {
+              setAuthor(e.target.value);
+              if (fieldErrors.author) setFieldErrors((prev) => ({ ...prev, author: undefined }));
+            }}
             disabled={isSubmitting}
             placeholder="ชื่อของคุณ"
-            className="bg-white border-stone-200 focus-visible:ring-orange-500/10"
+            className={`bg-white border-stone-200 focus-visible:ring-orange-500/10 ${fieldErrors.author ? "border-red-400" : ""}`}
           />
+          {fieldErrors.author && (
+            <p className="text-xs text-red-500 flex items-center gap-1">
+              <AlertCircle size={12} />
+              {fieldErrors.author}
+            </p>
+          )}
         </div>
 
         <div className="space-y-3">
@@ -84,11 +129,21 @@ export default function CommentForm({ slug }: Readonly<{ slug: string }>) {
             required
             rows={4}
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => {
+              setMessage(e.target.value);
+              if (fieldErrors.message) setFieldErrors((prev) => ({ ...prev, message: undefined }));
+            }}
             disabled={isSubmitting}
             placeholder="แชร์ความคิดเห็นของคุณ..."
-            className="bg-white border-stone-200 focus-visible:ring-orange-500/10 h-32"
+            className={`bg-white border-stone-200 focus-visible:ring-orange-500/10 h-32 ${fieldErrors.message ? "border-red-400" : ""}`}
           />
+          {fieldErrors.message && (
+            <p className="text-xs text-red-500 flex items-center gap-1">
+              <AlertCircle size={12} />
+              {fieldErrors.message}
+            </p>
+          )}
+          <p className="text-xs text-stone-400 text-right">{message.length}/1,000</p>
         </div>
 
         <div className="pt-2 flex flex-col md:flex-row items-center justify-between gap-6">

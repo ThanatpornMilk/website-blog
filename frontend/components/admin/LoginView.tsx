@@ -42,8 +42,12 @@ export default function LoginView() {
         body: JSON.stringify({ username, password }),
       });
       router.push("/admin");
-    } catch (err: any) {
-      setError(err.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+      }
     } finally {
       setIsSubmitting(false);
     }

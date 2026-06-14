@@ -11,14 +11,16 @@ import { Button, Badge, DataTable } from "@/components/ui";
 import { ColumnDef } from "@tanstack/react-table";
 import { CheckCircle2, Clock, XCircle, Check, X, Pencil } from "lucide-react";
 
+import { Comment } from "@/lib/types";
+
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
   PENDING: { label: "รออนุมัติ", color: "bg-orange-50 text-orange-600", icon: Clock },
   APPROVED: { label: "อนุมัติแล้ว", color: "bg-green-50 text-green-600", icon: CheckCircle2 },
-  REJECTED: { label: "ไม่อนุมัติ", color: "bg-red-50 text-red-500", icon: XCircle },
+  REJECTED: { label: "ไม่นุมัติ", color: "bg-red-50 text-red-500", icon: XCircle },
 };
 
 export default function CommentManagement() {
-  const [comments, setComments] = useState<any[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadData = async () => {
@@ -46,7 +48,7 @@ export default function CommentManagement() {
     }
   };
 
-  const columns: ColumnDef<any>[] = [
+  const columns: ColumnDef<Comment>[] = [
     {
       header: "ผู้แสดงความเห็น",
       accessorKey: "author",
@@ -60,7 +62,7 @@ export default function CommentManagement() {
             <div>
               <p className="font-bold text-stone-900">{comment.author}</p>
               <p className="text-[10px] text-stone-400 font-medium uppercase tracking-widest">
-                {comment.blog.title}
+                {comment.blog?.title || ""}
               </p>
             </div>
           </div>

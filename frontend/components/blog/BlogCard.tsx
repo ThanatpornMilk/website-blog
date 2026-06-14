@@ -7,17 +7,9 @@ import Image from "next/image";
 import { Eye, Calendar } from "lucide-react";
 import { formatThaiDate } from "@/lib/utils";
 
-interface BlogCardProps {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  views: number;
-  createdAt: string;
-  images: { url: string }[];
-}
+import { Blog } from "@/lib/types";
 
-export default function BlogCard({ blog }: Readonly<{ blog: BlogCardProps }>) {
+export default function BlogCard({ blog }: Readonly<{ blog: Blog }>) {
   const formattedDate = formatThaiDate(blog.createdAt);
 
   const coverImage = blog.images?.[0]?.url || "/images/placeholder.jpg";

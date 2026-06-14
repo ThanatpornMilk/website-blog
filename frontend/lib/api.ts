@@ -47,7 +47,22 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
       console.warn("Session expired or unauthorized");
     }
 
-    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    let errorMsg = `HTTP error! status: ${response.status}`;
+    if (errorData.error) {
+      if (typeof errorData.error === "string") {
+        errorMsg = errorData.error;
+      } else if (typeof errorData.error === "object" && errorData.error !== null) {
+        const values = Object.values(errorData.error).flat();
+        const messages = values.filter(val => typeof val === "string");
+        if (messages.length > 0) {
+          errorMsg = messages.join(", ");
+        } else {
+          errorMsg = JSON.stringify(errorData.error);
+        }
+      }
+    }
+
+    throw new Error(errorMsg);
   }
 
   // ส่งคืนข้อมูลในรูปแบบ JSON

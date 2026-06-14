@@ -6,10 +6,11 @@ import { MessageSquareText } from "lucide-react";
 import CommentForm from "./CommentForm";
 import { formatThaiDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Comment } from "@/lib/types";
 
 interface CommentSectionProps {
   slug: string;
-  comments: any[];
+  comments: Comment[];
 }
 
 export default function CommentSection({

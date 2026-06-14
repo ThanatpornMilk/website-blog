@@ -12,8 +12,10 @@ import { adminClient } from "@/lib/api/admin-client";
 import { ColumnDef } from "@tanstack/react-table";
 import BlogEditView from "./BlogEditView";
 
+import { Blog } from "@/lib/types";
+
 export default function BlogManagement() {
-  const [blogs, setBlogs] = useState<any[]>([]);
+  const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -44,7 +46,7 @@ export default function BlogManagement() {
     }
   };
 
-  const columns: ColumnDef<any>[] = [
+  const columns: ColumnDef<Blog>[] = [
     {
       header: "ชื่อบทความ",
       accessorKey: "title",

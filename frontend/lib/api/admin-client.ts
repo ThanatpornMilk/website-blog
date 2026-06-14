@@ -4,6 +4,7 @@
  */
 
 import { apiFetch } from "../api";
+import { Blog } from "../types";
 
 export const adminClient = {
   // [BLOG] ดึงรายการบทความทัั้งหมดในหน้า Admin
@@ -13,7 +14,7 @@ export const adminClient = {
   getBlog: (id: string) => apiFetch(`/admin/blogs/${id}`),
 
   // [BLOG] แก้ไขข้อมูลบทความ
-  updateBlog: (id: string, data: any) =>
+  updateBlog: (id: string, data: Partial<Blog>) =>
     apiFetch(`/admin/blogs/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),

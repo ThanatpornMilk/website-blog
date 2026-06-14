@@ -7,13 +7,15 @@ import Link from "next/link";
 import { Calendar, Eye, ArrowLeft } from "lucide-react";
 import { formatThaiDate } from "@/lib/utils";
 
+import { Blog, BlogImage } from "@/lib/types";
+
 interface BlogHeaderProps {
-  blog: any;
+  blog: Blog;
 }
 
 export default function BlogHeader({ blog }: BlogHeaderProps) {
   const formattedDate = formatThaiDate(blog.createdAt);
-  const coverImage = blog.images?.find((img: any) => img.isCover)?.url || "/images/placeholder.jpg";
+  const coverImage = blog.images?.find((img: BlogImage) => img.isCover)?.url || "/images/placeholder.jpg";
 
   return (
     <header className="relative h-[60vh] min-h-[400px] w-full bg-stone-100 overflow-hidden">

@@ -70,3 +70,10 @@ model Comment {
   @@index([blogId])
   @@index([blogId, status])
 }
+
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String   @db.Text
+  expiresAt DateTime
+}
